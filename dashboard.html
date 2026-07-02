@@ -121,8 +121,8 @@
     padding:8px 10px;
   }
   .badge{
-    display:inline-block; max-width:100%; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700;
-    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; vertical-align:top;
+    display:inline-block; padding:3px 9px; border-radius:14px; font-size:11px; font-weight:700;
+    line-height:1.4;
   }
   .tbl-wrap{max-height:640px; overflow:auto;}
   .scan-link{color:var(--blue); text-decoration:none; font-size:12px; white-space:nowrap;}
@@ -208,16 +208,15 @@
           <colgroup>
             <col style="width:5%">
             <col style="width:24%">
-            <col style="width:16%">
+            <col style="width:15%">
             <col style="width:8%">
             <col style="width:8%">
-            <col style="width:14%">
-            <col style="width:19%">
-            <col style="width:6%">
+            <col style="width:20%">
+            <col style="width:20%">
           </colgroup>
           <thead><tr>
             <th>STT</th><th>Nội dung công việc</th><th>Mã hồ sơ</th>
-            <th>Bắt đầu</th><th>Kết thúc</th><th>Trạng thái</th><th>Ghi chú</th><th>Scan</th>
+            <th>Bắt đầu</th><th>Kết thúc</th><th>Trạng thái</th><th>Ghi chú</th>
           </tr></thead>
           <tbody id="tableBody"></tbody>
         </table>
@@ -628,7 +627,7 @@ function renderTable(){
 
   items.forEach(item => {
     if (item.type === 'group'){
-      html += `<tr class="group-row"><td colspan="8">${item.label}</td></tr>`;
+      html += `<tr class="group-row"><td colspan="7">${item.label}</td></tr>`;
       lastGroupShown = true;
       return;
     }
@@ -637,7 +636,6 @@ function renderTable(){
     if (q && !haystack.includes(q)) return;
     rowNum++;
     const meta = STATUS_META[item.statusKey];
-    const scanLink = item.scan ? `<a class="scan-link" href="${item.scan}" target="_blank" rel="noopener">Xem ↗</a>` : '<span class="note">—</span>';
     html += `<tr>
       <td>${rowNum}</td>
       <td>${item.nd1}${item.nd2 ? '<div class="note">'+item.nd2.replace(/\\n/g,' · ')+'</div>' : ''}</td>
@@ -646,10 +644,9 @@ function renderTable(){
       <td>${item.ketThuc || '—'}</td>
       <td><span class="badge" style="background:${meta.color}1f; color:${meta.color}; border:1px solid ${meta.color}55; font-weight:800;">${item.trangThai || meta.label}</span></td>
       <td class="note">${item.ghiChu || ''}</td>
-      <td>${scanLink}</td>
     </tr>`;
   });
-  tbody.innerHTML = html || '<tr><td colspan="8" class="note" style="padding:20px;text-align:center;">Không có dữ liệu khớp bộ lọc.</td></tr>';
+  tbody.innerHTML = html || '<tr><td colspan="7" class="note" style="padding:20px;text-align:center;">Không có dữ liệu khớp bộ lọc.</td></tr>';
 }
 
 document.getElementById('searchBox').addEventListener('input', renderTable);
