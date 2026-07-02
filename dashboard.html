@@ -624,6 +624,7 @@ function renderTable(){
   const tbody = document.getElementById('tableBody');
   let html = '';
   let lastGroupShown = false;
+  let rowNum = 0;
 
   items.forEach(item => {
     if (item.type === 'group'){
@@ -634,10 +635,11 @@ function renderTable(){
     if (statusF && item.statusKey !== statusF) return;
     const haystack = (item.nd1+' '+item.nd2+' '+item.maHs).toLowerCase();
     if (q && !haystack.includes(q)) return;
+    rowNum++;
     const meta = STATUS_META[item.statusKey];
     const scanLink = item.scan ? `<a class="scan-link" href="${item.scan}" target="_blank" rel="noopener">Xem ↗</a>` : '<span class="note">—</span>';
     html += `<tr>
-      <td>${item.stt}</td>
+      <td>${rowNum}</td>
       <td>${item.nd1}${item.nd2 ? '<div class="note">'+item.nd2.replace(/\\n/g,' · ')+'</div>' : ''}</td>
       <td class="code-cell">${item.maHs || '<span class="note">—</span>'}</td>
       <td>${item.batDau || '—'}</td>
