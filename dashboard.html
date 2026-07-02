@@ -24,7 +24,7 @@
   }
   .wrap{max-width:1280px; margin:0 auto;}
   header{display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:12px; margin-bottom:22px;}
-  h1{font-size:22px; font-weight:700; letter-spacing:.3px;}
+  h1{font-size:27px; font-weight:800; letter-spacing:.2px;}
   h1 span{color:var(--accent);}
   .sub{color:var(--text-dim); font-size:13px; margin-top:4px;}
   #syncInfo{font-size:12px; color:var(--text-dim); display:flex; align-items:center; gap:8px;}
@@ -45,26 +45,62 @@
   .tab.active{background:linear-gradient(135deg, var(--accent-dim), transparent); border-color:var(--accent); color:var(--accent);}
   .tab .cnt{opacity:.7; font-weight:400; margin-left:6px;}
 
+  .hero-progress{
+    background:var(--glass); border:1px solid var(--glass-brd); border-radius:14px;
+    padding:14px 18px; margin-bottom:20px; backdrop-filter:blur(18px);
+    box-shadow:0 8px 40px -20px var(--accent);
+  }
+  .hero-progress-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:9px; gap:10px; flex-wrap:wrap;}
+  .hero-progress-top .lbl{font-size:12px; color:var(--text-dim); letter-spacing:.3px;}
+  .hero-progress-top .lbl b{color:var(--text); font-weight:600;}
+  .hero-progress-pct{font-size:16px; font-weight:800; color:var(--accent);}
+  .hero-progress-track{height:10px; border-radius:8px; background:rgba(255,255,255,0.06); overflow:hidden;}
+  .hero-progress-fill{
+    height:100%; border-radius:8px; width:0%;
+    background:linear-gradient(90deg, var(--accent), #5be0c2);
+    box-shadow:0 0 14px var(--accent-dim);
+    transition:width .6s cubic-bezier(.22,.9,.34,1);
+  }
+
   .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:20px;}
   .card{
     background:var(--glass); border:1px solid var(--glass-brd); border-radius:14px; padding:16px 18px;
-    backdrop-filter:blur(14px); position:relative; overflow:hidden;
+    backdrop-filter:blur(18px); position:relative; overflow:hidden;
+    box-shadow:0 8px 28px -18px rgba(0,200,150,.25);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .card:hover{
+    transform:translateY(-2px);
+    box-shadow:0 14px 32px -14px rgba(0,0,0,.55), 0 0 0 1px var(--card-c, var(--glass-brd));
+    border-color:var(--card-c, var(--glass-brd));
   }
   .card::before{content:''; position:absolute; inset:0; border-radius:14px; padding:1px;
     background:linear-gradient(135deg, var(--card-c, var(--accent)), transparent 60%);
     -webkit-mask:linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite:xor; mask-composite:exclude; opacity:.5;}
+  .card-icon{color:var(--card-c, var(--accent)); opacity:.85; margin-bottom:10px; display:inline-flex;}
   .card .num{font-size:28px; font-weight:800; color:var(--card-c, var(--text));}
   .card .lbl{font-size:12px; color:var(--text-dim); margin-top:2px;}
+  .card-total{background:linear-gradient(135deg, var(--accent-dim), var(--glass)); border-color:var(--accent-dim);}
+  .card-total .num{font-size:36px;}
 
-  .grid-main{display:grid; grid-template-columns:320px 1fr; gap:18px;}
+  .grid-main{display:grid; grid-template-columns:minmax(300px,380px) 1fr; gap:18px;}
   @media(max-width:860px){.grid-main{grid-template-columns:1fr;}}
 
   .panel{
     background:var(--glass); border:1px solid var(--glass-brd); border-radius:16px;
-    padding:18px; backdrop-filter:blur(14px);
+    padding:18px; backdrop-filter:blur(18px);
+    box-shadow:0 10px 44px -24px rgba(0,200,150,.3);
   }
-  .panel h3{font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:.8px; margin-bottom:14px;}
+  .panel h3{font-size:13px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1.4px; margin-bottom:14px; font-weight:700;}
+
+  .pending-list{display:flex; flex-direction:column; gap:8px; max-height:280px; overflow:auto;}
+  .pending-item{
+    display:flex; gap:10px; align-items:flex-start; padding:9px 10px;
+    background:rgba(255,255,255,0.03); border:1px solid var(--glass-brd); border-radius:10px;
+  }
+  .pending-item .badge{flex-shrink:0; margin-top:1px;}
+  .pending-title{font-size:12.5px; font-weight:600; color:var(--text); line-height:1.35;}
 
   .toolbar{display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap;}
   .toolbar input, .toolbar select{
@@ -114,6 +150,14 @@
 
   <div id="loadErr"></div>
 
+  <div class="hero-progress">
+    <div class="hero-progress-top">
+      <span class="lbl">Tiến độ hoàn thành — <b id="heroProgressTab">Mái</b> (Chấp thuận + Chấp thuận có điều kiện)</span>
+      <span class="hero-progress-pct" id="heroProgressPct">0%</span>
+    </div>
+    <div class="hero-progress-track"><div class="hero-progress-fill" id="heroProgressFill"></div></div>
+  </div>
+
   <div class="tabs" id="tabs"></div>
   <div class="cards" id="cards"></div>
 
@@ -123,6 +167,12 @@
       <canvas id="statusChart" height="230"></canvas>
       <h3 style="margin-top:22px;">So sánh 3 hạng mục</h3>
       <canvas id="compareChart" height="200"></canvas>
+      <h3 style="margin-top:22px;">Xu hướng hồ sơ theo tháng</h3>
+      <canvas id="trendChart" height="180"></canvas>
+      <h3 style="margin-top:22px;">Thời gian xử lý TB (ngày)</h3>
+      <canvas id="procTimeChart" height="170"></canvas>
+      <h3 style="margin-top:22px;">⚠ Hồ sơ tồn đọng</h3>
+      <div class="pending-list" id="pendingList"></div>
     </div>
     <div class="panel">
       <h3 id="tableTitle">Danh mục hồ sơ</h3>
@@ -171,7 +221,35 @@ const STATUS_META = {
 
 let DATA = {};       // key -> { rows: [...], groups intact }
 let activeTab = 'mai';
-let statusChartInst = null, compareChartInst = null;
+let statusChartInst = null, compareChartInst = null, trendChartInst = null, procTimeChartInst = null;
+
+const TOTAL_ICON = `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>`;
+const STATUS_ICONS = {
+  approved: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>`,
+  conditional: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/><circle cx="19.5" cy="4.5" r="2.6" fill="currentColor" stroke="none"/></svg>`,
+  pending: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>`,
+  reject: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>`,
+  none: `<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.2a2.6 2.6 0 1 1 3.3 2.5c-.7.25-1.3.85-1.3 1.6"/><circle cx="12" cy="16.6" r=".6" fill="currentColor" stroke="none"/></svg>`,
+};
+
+// vẽ số ngày trên đầu cột cho bar chart nằm ngang (không dùng thư viện ngoài)
+const barValueLabelPlugin = {
+  id: 'barValueLabel',
+  afterDatasetsDraw(chart){
+    const { ctx } = chart;
+    const meta = chart.getDatasetMeta(0);
+    ctx.save();
+    ctx.fillStyle = '#e7edf5';
+    ctx.font = '600 11px "Segoe UI", sans-serif';
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'left';
+    meta.data.forEach((bar, idx) => {
+      const value = chart.data.datasets[0].data[idx];
+      ctx.fillText(value + ' ngày', bar.x + 8, bar.y);
+    });
+    ctx.restore();
+  }
+};
 
 function csvUrl(sheetName){
   return `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
@@ -211,6 +289,62 @@ function parseSheet(csvText){
     });
   }
   return items;
+}
+
+// Parse "dd/mm", "dd/mm/yy" hoặc "dd/mm/yyyy" -> Date (null nếu không hợp lệ)
+function parseVNDate(str){
+  if (!str) return null;
+  const m = str.trim().match(/^(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?/);
+  if (!m) return null;
+  const day = parseInt(m[1], 10), month = parseInt(m[2], 10);
+  let year = m[3] ? parseInt(m[3], 10) : new Date().getFullYear();
+  if (year < 100) year += 2000;
+  const d = new Date(year, month - 1, day);
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function computeTrend(dataRows){
+  const map = {};
+  dataRows.forEach(r => {
+    const d = parseVNDate(r.batDau);
+    if (!d) return;
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    map[key] = (map[key] || 0) + 1;
+  });
+  const keys = Object.keys(map).sort();
+  return {
+    labels: keys.map(k => { const [y, mo] = k.split('-'); return `Th.${mo}/${y}`; }),
+    data: keys.map(k => map[k]),
+  };
+}
+
+function computeAvgProcessing(){
+  return SHEETS.map(sh => {
+    const rows = (DATA[sh.key] || []).filter(x => x.type === 'data');
+    const durations = [];
+    rows.forEach(r => {
+      const d1 = parseVNDate(r.batDau), d2 = parseVNDate(r.ketThuc);
+      if (d1 && d2){
+        const days = Math.round((d2 - d1) / 86400000);
+        if (days >= 0) durations.push(days);
+      }
+    });
+    const avg = durations.length ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length) : 0;
+    return { label: sh.label, avg };
+  });
+}
+
+function getPendingBacklog(dataRows){
+  const now = new Date();
+  return dataRows
+    .filter(r => r.statusKey === 'pending' && !r.ketThuc)
+    .map(r => ({ ...r, dateObj: parseVNDate(r.batDau) }))
+    .sort((a, b) => {
+      if (!a.dateObj) return 1;
+      if (!b.dateObj) return -1;
+      return a.dateObj - b.dateObj;
+    })
+    .map(r => ({ ...r, ageDays: r.dateObj ? Math.round((now - r.dateObj) / 86400000) : null }));
 }
 
 async function loadAll(){
@@ -258,11 +392,24 @@ function render(){
   dataRows.forEach(r => counts[r.statusKey]++);
   const cardsEl = document.getElementById('cards');
   cardsEl.innerHTML = `
-    <div class="card" style="--card-c:#e7edf5"><div class="num">${dataRows.length}</div><div class="lbl">Tổng hồ sơ</div></div>
+    <div class="card card-total" style="--card-c:var(--accent)">
+      <div class="card-icon">${TOTAL_ICON}</div>
+      <div class="num">${dataRows.length}</div><div class="lbl">Tổng hồ sơ</div>
+    </div>
     ${Object.entries(STATUS_META).map(([k,m]) => `
-      <div class="card" style="--card-c:${m.color}"><div class="num">${counts[k]}</div><div class="lbl">${m.label}</div></div>
+      <div class="card" style="--card-c:${m.color}">
+        <div class="card-icon">${STATUS_ICONS[k]}</div>
+        <div class="num">${counts[k]}</div><div class="lbl">${m.label}</div>
+      </div>
     `).join('')}
   `;
+
+  // hero progress bar
+  const doneCount = counts.approved + counts.conditional;
+  const pct = dataRows.length ? Math.round(doneCount / dataRows.length * 100) : 0;
+  document.getElementById('heroProgressTab').textContent = SHEETS.find(s=>s.key===activeTab).label;
+  document.getElementById('heroProgressPct').textContent = pct + '%';
+  document.getElementById('heroProgressFill').style.width = pct + '%';
 
   // status donut chart
   const ctx1 = document.getElementById('statusChart');
@@ -299,6 +446,68 @@ function render(){
       plugins:{ legend:{ display:false } }
     }
   });
+
+  // trend chart — xu hướng hồ sơ bắt đầu theo tháng (tab hiện tại)
+  const trend = computeTrend(dataRows);
+  const ctx3 = document.getElementById('trendChart');
+  if (trendChartInst) trendChartInst.destroy();
+  trendChartInst = new Chart(ctx3, {
+    type:'line',
+    data:{
+      labels: trend.labels,
+      datasets:[{
+        label:'Hồ sơ bắt đầu', data: trend.data,
+        borderColor:'#00c896', backgroundColor:'rgba(0,200,150,0.18)',
+        fill:true, tension:.35, pointRadius:3, pointBackgroundColor:'#00c896', borderWidth:2,
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{
+        x:{ ticks:{color:'#93a1b7', font:{size:10}}, grid:{display:false} },
+        y:{ ticks:{color:'#93a1b7', precision:0}, grid:{color:'rgba(255,255,255,0.05)'}, beginAtZero:true }
+      },
+      plugins:{ legend:{ display:false } }
+    }
+  });
+
+  // bar chart ngang — thời gian xử lý trung bình theo hạng mục (3 sheet)
+  const procStats = computeAvgProcessing();
+  const ctx4 = document.getElementById('procTimeChart');
+  if (procTimeChartInst) procTimeChartInst.destroy();
+  procTimeChartInst = new Chart(ctx4, {
+    type:'bar',
+    data:{
+      labels: procStats.map(s=>s.label),
+      datasets:[{ data: procStats.map(s=>s.avg), backgroundColor:['#00c896','#3b82f6','#f5a623'], borderRadius:6, barThickness:22 }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      layout:{ padding:{ right:44 } },
+      scales:{
+        x:{ ticks:{color:'#93a1b7'}, grid:{color:'rgba(255,255,255,0.05)'}, beginAtZero:true },
+        y:{ ticks:{color:'#93a1b7'}, grid:{display:false} }
+      },
+      plugins:{ legend:{ display:false } }
+    },
+    plugins:[barValueLabelPlugin]
+  });
+
+  // danh sách cảnh báo hồ sơ tồn đọng (tab hiện tại)
+  const backlog = getPendingBacklog(dataRows);
+  const pendingEl = document.getElementById('pendingList');
+  pendingEl.innerHTML = backlog.length ? backlog.map(r => {
+    const severe = r.ageDays !== null && r.ageDays > 60;
+    const badgeColor = severe ? 'var(--red)' : 'var(--amber)';
+    return `<div class="pending-item">
+      <span class="badge" style="background:${badgeColor}22; color:${badgeColor};">${r.ageDays !== null ? r.ageDays + ' ngày' : '—'}</span>
+      <div>
+        <div class="pending-title">${r.nd1 || r.maHs || 'Không tên'}</div>
+        <div class="note">Mã: ${r.maHs || '—'} · Bắt đầu: ${r.batDau || '—'}</div>
+      </div>
+    </div>`;
+  }).join('') : '<div class="note">Không có hồ sơ tồn đọng.</div>';
 
   document.getElementById('tableTitle').textContent =
     'Danh mục hồ sơ — ' + SHEETS.find(s=>s.key===activeTab).label;
