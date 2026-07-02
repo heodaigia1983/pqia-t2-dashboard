@@ -124,7 +124,7 @@
   tbody td{
     padding:10px 12px; vertical-align:top; color:var(--text);
     border-right:1px solid rgba(16,24,40,.05);
-    word-break:break-word; overflow-wrap:break-word;
+    overflow:hidden; word-break:break-all; overflow-wrap:break-word;
   }
   tbody td:last-child{border-right:none;}
   .code-cell{font-family:'Consolas','SF Mono',monospace; font-size:12px; color:var(--text-dim);}
@@ -134,8 +134,8 @@
     padding:8px 10px;
   }
   .badge{
-    display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700;
-    white-space:nowrap;
+    display:inline-block; max-width:100%; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:700;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; vertical-align:top;
   }
   .tbl-wrap{max-height:640px; overflow:auto;}
   .scan-link{color:var(--blue); text-decoration:none; font-size:12px; white-space:nowrap;}
@@ -251,11 +251,11 @@ const SHEETS = [
 // Chỉ lấy đúng mục "HỒ SƠ PHÊ DUYỆT BẢN VẼ" (không lấy "...BẢN VẼ THIẾT KẾ")
 const TARGET_GROUP = 'HỒ SƠ PHÊ DUYỆT BẢN VẼ';
 const STATUS_META = {
-  approved:    { label:'Chấp thuận',              color:'#00c896' },
-  conditional: { label:'Chấp thuận có điều kiện',  color:'#f5a623' },
-  pending:     { label:'Đang xử lý',               color:'#3b82f6' },
-  reject:      { label:'Reject',                   color:'#ff5470' },
-  none:        { label:'Chưa có trạng thái',        color:'#64748b' },
+  approved:    { label:'Chấp thuận',              color:'#059669' },
+  conditional: { label:'Chấp thuận có điều kiện',  color:'#b8862c' },
+  pending:     { label:'Đang xử lý',               color:'#2563eb' },
+  reject:      { label:'Reject',                   color:'#b91c1c' },
+  none:        { label:'Chưa có trạng thái',        color:'#94a3b8' },
 };
 
 let DATA = {};       // key -> { rows: [...], groups intact }
@@ -447,6 +447,29 @@ const percentLabelPlugin = {
   }
 };
 Chart.register(percentLabelPlugin);
+
+const centerTextPlugin = {
+  id: 'centerText',
+  afterDraw(chart) {
+    if (chart.canvas.id !== 'statusChart') return;
+    const data = chart.data.datasets[0].data;
+    const total = data.reduce((a,b)=>a+b,0) || 1;
+    const done = data[0] + data[1]; // approved + conditional
+    const pct = Math.round(done/total*100);
+    const ctx = chart.ctx;
+    const cx = chart.width/2, cy = chart.height/2;
+    ctx.save();
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='700 26px Segoe UI, sans-serif';
+    ctx.fillStyle = '#14213d';
+    ctx.fillText(pct+'%', cx, cy-8);
+    ctx.font='600 11px Segoe UI, sans-serif';
+    ctx.fillStyle = '#5b6472';
+    ctx.fillText('Hoàn thành', cx, cy+16);
+    ctx.restore();
+  }
+};
+Chart.register(centerTextPlugin);
 
 function render(){
   const items = DATA[activeTab] || [];
