@@ -111,14 +111,23 @@
   .toolbar input{flex:1; min-width:180px;}
   .toolbar input:focus, .toolbar select:focus{border-color:var(--accent);}
 
-  table{width:100%; border-collapse:collapse; font-size:13px;}
+  table{width:100%; border-collapse:collapse; font-size:13px; table-layout:fixed;}
   thead th{
-    text-align:left; padding:9px 10px; color:var(--text-dim); font-weight:600;
-    border-bottom:2px solid var(--border); position:sticky; top:0; background:var(--bg-1);
+    text-align:left; padding:10px 12px; color:var(--text-dim); font-weight:700;
+    border-bottom:2px solid var(--border); border-right:1px solid var(--border);
+    background:#f6f8fb; position:sticky; top:0;
   }
+  thead th:last-child{border-right:none;}
   tbody tr{border-bottom:1px solid var(--border);}
-  tbody tr:hover{background:rgba(16,24,40,0.03);}
-  tbody td{padding:9px 10px; vertical-align:top; color:var(--text);}
+  tbody tr:nth-child(even){background:rgba(16,24,40,.018);}
+  tbody tr:hover{background:rgba(16,24,40,.045);}
+  tbody td{
+    padding:10px 12px; vertical-align:top; color:var(--text);
+    border-right:1px solid rgba(16,24,40,.05);
+    word-break:break-word; overflow-wrap:break-word;
+  }
+  tbody td:last-child{border-right:none;}
+  .code-cell{font-family:'Consolas','SF Mono',monospace; font-size:12px; color:var(--text-dim);}
   tr.group-row td{
     background:linear-gradient(90deg, var(--accent-dim), transparent);
     color:var(--accent); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.4px;
@@ -209,6 +218,16 @@
       </div>
       <div class="tbl-wrap">
         <table>
+          <colgroup>
+            <col style="width:44px">
+            <col style="width:26%">
+            <col style="width:170px">
+            <col style="width:72px">
+            <col style="width:72px">
+            <col style="width:150px">
+            <col style="width:auto">
+            <col style="width:56px">
+          </colgroup>
           <thead><tr>
             <th>STT</th><th>Nội dung công việc</th><th>Mã hồ sơ</th>
             <th>Bắt đầu</th><th>Kết thúc</th><th>Trạng thái</th><th>Ghi chú</th><th>Scan</th>
@@ -556,7 +575,7 @@ function renderTable(){
     html += `<tr>
       <td>${item.stt}</td>
       <td>${item.nd1}${item.nd2 ? '<div class="note">'+item.nd2.replace(/\\n/g,' · ')+'</div>' : ''}</td>
-      <td>${item.maHs || '<span class="note">—</span>'}</td>
+      <td class="code-cell">${item.maHs || '<span class="note">—</span>'}</td>
       <td>${item.batDau || '—'}</td>
       <td>${item.ketThuc || '—'}</td>
       <td><span class="badge" style="background:${meta.color}22; color:${meta.color};">${item.trangThai || meta.label}</span></td>
