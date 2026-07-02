@@ -138,7 +138,7 @@
     white-space:nowrap;
   }
   .tbl-wrap{max-height:640px; overflow:auto;}
-  .scan-link{color:var(--blue); text-decoration:none; font-size:12px;}
+  .scan-link{color:var(--blue); text-decoration:none; font-size:12px; white-space:nowrap;}
   .scan-link:hover{text-decoration:underline;}
   .note{color:var(--text-dim); font-size:12px;}
   footer{text-align:center; color:var(--text-dim); font-size:11px; margin-top:26px; opacity:.7;}
@@ -225,8 +225,8 @@
             <col style="width:8%">
             <col style="width:8%">
             <col style="width:14%">
-            <col style="width:20%">
-            <col style="width:5%">
+            <col style="width:19%">
+            <col style="width:6%">
           </colgroup>
           <thead><tr>
             <th>STT</th><th>Nội dung công việc</th><th>Mã hồ sơ</th>
@@ -422,6 +422,32 @@ function renderTabs(){
 
 function switchTab(key){ activeTab = key; render(); renderTabs(); }
 
+const percentLabelPlugin = {
+  id: 'percentLabel',
+  afterDraw(chart) {
+    if (chart.canvas.id !== 'statusChart') return;
+    const meta = chart.getDatasetMeta(0);
+    const data = chart.data.datasets[0].data;
+    const total = data.reduce((a,b)=>a+b,0) || 1;
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = '700 11px Segoe UI, sans-serif';
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    meta.data.forEach((arc, i) => {
+      const val = data[i];
+      if (!val) return;
+      const pct = Math.round(val/total*100);
+      if (pct < 5) return;
+      const pos = arc.tooltipPosition();
+      ctx.fillText(pct+'%', pos.x, pos.y);
+    });
+    ctx.restore();
+  }
+};
+Chart.register(percentLabelPlugin);
+
 function render(){
   const items = DATA[activeTab] || [];
   const dataRows = items.filter(x=>x.type==='data');
@@ -599,7 +625,7 @@ function renderTable(){
     const haystack = (item.nd1+' '+item.nd2+' '+item.maHs).toLowerCase();
     if (q && !haystack.includes(q)) return;
     const meta = STATUS_META[item.statusKey];
-    const scanLink = item.scan ? `<a class="scan-link" href="${item.scan}" target="_blank" rel="noopener">Link ↗</a>` : '<span class="note">—</span>';
+    const scanLink = item.scan ? `<a class="scan-link" href="${item.scan}" target="_blank" rel="noopener">Xem ↗</a>` : '<span class="note">—</span>';
     html += `<tr>
       <td>${item.stt}</td>
       <td>${item.nd1}${item.nd2 ? '<div class="note">'+item.nd2.replace(/\\n/g,' · ')+'</div>' : ''}</td>
