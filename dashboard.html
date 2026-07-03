@@ -16,6 +16,37 @@
     --card-bg:#ffffff; --border:#d8dfea; --border-strong:#c3cddc;
     --glass:#f1f4f9; --glass-brd:#d8dfea;
   }
+  body.dark-mode{
+    --bg-0:#0a0e18; --bg-1:#10162a;
+    --navy:#eef2fb; --accent:#22e0c0; --accent-2:#0ea5e2; --accent-dim:#22e0c022;
+    --gold:#e0b354; --gold-lt:#f0c878;
+    --amber:#f0b429; --red:#ff5c72; --blue:#4f8ff0; --gray:#7b8aa6;
+    --text:#e6ecf7; --text-dim:#93a1ba;
+    --card-bg:#131a2e; --border:#232c44; --border-strong:#2e3a58;
+    --glass:#141b30; --glass-brd:#232c44;
+  }
+  body.dark-mode{
+    background:
+      radial-gradient(900px 520px at 8% 0%, rgba(34,224,192,.10), transparent 60%),
+      radial-gradient(900px 520px at 96% 10%, rgba(14,165,226,.09), transparent 60%),
+      radial-gradient(700px 500px at 50% 100%, rgba(224,179,84,.06), transparent 60%),
+      var(--bg-0);
+  }
+  body.dark-mode .card{
+    box-shadow:0 4px 12px rgba(0,0,0,.45), 0 0 26px -10px var(--card-c, var(--accent));
+  }
+  body.dark-mode .card:hover{
+    box-shadow:0 6px 18px rgba(0,0,0,.5), 0 0 36px -8px var(--card-c, var(--accent));
+  }
+  body.dark-mode .panel, body.dark-mode .hero-progress{
+    box-shadow:0 4px 12px rgba(0,0,0,.4), 0 0 30px -14px var(--accent);
+  }
+  body.dark-mode thead th{ color:var(--navy); }
+  body.dark-mode tbody tr:nth-child(even){ background:rgba(255,255,255,.02); }
+  body.dark-mode tbody tr:hover{ background:rgba(255,255,255,.035); }
+  body.dark-mode .toolbar input, body.dark-mode .toolbar select{ background:var(--card-bg); color:var(--text); }
+  body.dark-mode .hero-progress-track{ background:#1a2138; }
+  /* .widget-card (kính mờ trên ảnh hero) giữ nguyên, KHÔNG đổi theo dark mode vì đã trong suốt độc lập với theme */
   *{box-sizing:border-box; margin:0; padding:0;}
   body{
     background:
@@ -34,6 +65,12 @@
   #refreshBtn{background:var(--accent); border:none; color:#fff; padding:8px 16px; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; box-shadow:0 2px 6px rgba(22,48,92,.25); transition:.15s;}
   #refreshBtn:hover{background:var(--accent-2);}
   #refreshBtn:disabled{opacity:.5; cursor:wait;}
+  #themeToggle{
+    background:var(--glass); border:1px solid var(--glass-brd); color:var(--text);
+    width:34px; height:34px; border-radius:50%; cursor:pointer; font-size:15px;
+    display:inline-flex; align-items:center; justify-content:center; transition:.15s;
+  }
+  #themeToggle:hover{ border-color:var(--accent); transform:translateY(-1px); }
 
   .tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
   .tab{padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:600; font-size:14px; background:var(--glass); border:1px solid var(--glass-brd); color:var(--text-dim); transition:.15s;}
@@ -218,6 +255,9 @@
     </div>
     <div id="syncInfo">
       <span id="syncTime">Đang tải...</span>
+      <button id="themeToggle" onclick="toggleTheme()" title="Chuyển giao diện sáng/tối">
+        <span id="themeIcon">🌙</span>
+      </button>
       <button id="refreshBtn" onclick="loadAll()">↻ Làm mới</button>
     </div>
   </header>
@@ -302,6 +342,24 @@ const STATUS_META = {
   none:        { label:'Chưa có trạng thái',        color:'#94a3b8' },
 };
 
+function applyTheme(){
+  const saved = localStorage.getItem('pqia-theme');
+  const dark = saved === 'dark';
+  document.body.classList.toggle('dark-mode', dark);
+  document.getElementById('themeIcon').textContent = dark ? '☀️' : '🌙';
+}
+function toggleTheme(){
+  const dark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('pqia-theme', dark ? 'dark' : 'light');
+  document.getElementById('themeIcon').textContent = dark ? '☀️' : '🌙';
+  render(); // vẽ lại chart để đổi màu chữ/lưới theo theme
+}
+applyTheme();
+
+function isDarkMode(){ return document.body.classList.contains('dark-mode'); }
+function chartTextColor(){ return isDarkMode() ? '#93a1ba' : '#63708a'; }
+function chartGridColor(){ return isDarkMode() ? 'rgba(255,255,255,.06)' : 'rgba(22,48,92,.06)'; }
+
 let DATA = {};       // key -> { rows: [...], groups intact }
 let activeTab = 'mai';
 let statusChartInst = null, compareChartInst = null, trendChartInst = null, procTimeChartInst = null;
@@ -319,10 +377,11 @@ const STATUS_ICONS = {
 const barValueLabelPlugin = {
   id: 'barValueLabel',
   afterDatasetsDraw(chart){
+    const dark = document.body.classList.contains('dark-mode');
     const { ctx } = chart;
     const meta = chart.getDatasetMeta(0);
     ctx.save();
-    ctx.fillStyle = '#16233f';
+    ctx.fillStyle = dark ? '#e6ecf7' : '#16233f';
     ctx.font = '600 11px "Segoe UI", sans-serif';
     ctx.textBaseline = 'middle';
     ctx.textAlign = 'left';
@@ -469,6 +528,7 @@ function switchTab(key){ activeTab = key; render(); renderTabs(); }
 const percentLabelPlugin = {
   id: 'percentLabel',
   afterDraw(chart) {
+    const dark = document.body.classList.contains('dark-mode');
     if (chart.canvas.id !== 'statusChart') return;
     const meta = chart.getDatasetMeta(0);
     const data = chart.data.datasets[0].data;
@@ -495,6 +555,7 @@ Chart.register(percentLabelPlugin);
 const centerTextPlugin = {
   id: 'centerText',
   afterDraw(chart) {
+    const dark = document.body.classList.contains('dark-mode');
     if (chart.canvas.id !== 'statusChart') return;
     const data = chart.data.datasets[0].data;
     const total = data.reduce((a,b)=>a+b,0) || 1;
@@ -505,10 +566,10 @@ const centerTextPlugin = {
     ctx.save();
     ctx.textAlign='center'; ctx.textBaseline='middle';
     ctx.font='700 26px Segoe UI, sans-serif';
-    ctx.fillStyle = '#14213d';
+    ctx.fillStyle = dark ? '#eef2fb' : '#14213d';
     ctx.fillText(pct+'%', cx, cy-8);
     ctx.font='600 11px Segoe UI, sans-serif';
-    ctx.fillStyle = '#5b6472';
+    ctx.fillStyle = dark ? '#93a1ba' : '#5b6472';
     ctx.fillText('Hoàn thành', cx, cy+16);
     ctx.restore();
   }
@@ -558,7 +619,7 @@ function render(){
         legend:{
           position:'bottom',
           labels:{
-            color:'#63708a', boxWidth:10, font:{size:11},
+            color:chartTextColor(), boxWidth:10, font:{size:11},
             generateLabels: (chart) => {
               const data = chart.data.datasets[0].data;
               const total = data.reduce((a,b)=>a+b,0) || 1;
@@ -600,8 +661,8 @@ function render(){
     options:{
       responsive:true,
       scales:{
-        x:{ stacked:true, ticks:{color:'#63708a'}, grid:{color:'rgba(22,48,92,.06)'} },
-        y:{ stacked:true, ticks:{color:'#63708a'}, grid:{color:'rgba(22,48,92,.06)'} }
+        x:{ stacked:true, ticks:{color:chartTextColor()}, grid:{color:chartGridColor()} },
+        y:{ stacked:true, ticks:{color:chartTextColor()}, grid:{color:chartGridColor()} }
       },
       plugins:{ legend:{ display:false } }
     }
@@ -624,8 +685,8 @@ function render(){
     options:{
       responsive:true,
       scales:{
-        x:{ ticks:{color:'#63708a', font:{size:10}}, grid:{display:false} },
-        y:{ ticks:{color:'#63708a', precision:0}, grid:{color:'rgba(22,48,92,.06)'}, beginAtZero:true }
+        x:{ ticks:{color:chartTextColor(), font:{size:10}}, grid:{display:false} },
+        y:{ ticks:{color:chartTextColor(), precision:0}, grid:{color:chartGridColor()}, beginAtZero:true }
       },
       plugins:{ legend:{ display:false } }
     }
@@ -646,8 +707,8 @@ function render(){
       responsive:true,
       layout:{ padding:{ right:44 } },
       scales:{
-        x:{ ticks:{color:'#63708a'}, grid:{color:'rgba(22,48,92,.06)'}, beginAtZero:true },
-        y:{ ticks:{color:'#63708a'}, grid:{display:false} }
+        x:{ ticks:{color:chartTextColor()}, grid:{color:chartGridColor()}, beginAtZero:true },
+        y:{ ticks:{color:chartTextColor()}, grid:{display:false} }
       },
       plugins:{ legend:{ display:false } }
     },
