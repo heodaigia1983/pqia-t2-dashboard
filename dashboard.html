@@ -135,9 +135,12 @@
   .widget-row{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:22px;}
   @media(max-width:760px){.widget-row{grid-template-columns:1fr;}}
   .widget-card{
-    background:linear-gradient(135deg,var(--accent) 0%,var(--accent-2) 60%,#0d2140 100%);
-    border-radius:16px; padding:18px 20px; color:#fff; position:relative; overflow:hidden;
-    box-shadow:0 10px 24px rgba(15,23,42,.18);
+    background:rgba(255,255,255,.14);
+    backdrop-filter:blur(18px) saturate(160%);
+    -webkit-backdrop-filter:blur(18px) saturate(160%);
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:16px; padding:16px 20px; color:#fff; position:relative; overflow:hidden;
+    box-shadow:0 8px 24px rgba(0,0,0,.18);
   }
   .widget-label{font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; opacity:.85; margin-bottom:10px;}
   .wx-main{display:flex; align-items:center; gap:10px;}
@@ -156,19 +159,25 @@
   .cal-dot{position:absolute; bottom:2px; left:50%; transform:translateX(-50%); width:4px; height:4px; border-radius:50%; background:var(--gold-lt,#e6c274);}
 
   .hero{
-    position:relative; height:340px; margin:-24px -24px 24px -24px;
+    position:relative; height:440px; margin:-24px -24px 24px -24px;
     background:url('hero-pqia-t2.jpg') center 60%/cover no-repeat;
     border-radius:0 0 20px 20px; overflow:hidden;
   }
   .hero-overlay{
     position:absolute; inset:0;
-    background:linear-gradient(180deg, rgba(20,33,61,.15) 0%, rgba(238,241,246,0) 55%, var(--bg-0) 96%);
+    background:linear-gradient(180deg, rgba(20,33,61,.12) 0%, rgba(20,33,61,.04) 38%, rgba(13,20,40,.55) 80%, var(--bg-0) 100%);
   }
   .hero-caption{
-    position:absolute; left:24px; bottom:20px; color:#fff; font-weight:700; font-size:15px;
-    text-shadow:0 2px 8px rgba(0,0,0,.5); letter-spacing:.3px;
+    position:absolute; left:24px; top:20px; color:#fff; font-weight:700; font-size:13px;
+    text-transform:uppercase; letter-spacing:1px; text-shadow:0 2px 8px rgba(0,0,0,.5);
   }
-  @media(max-width:640px){ .hero{height:220px; margin:-16px -16px 20px -16px;} }
+  @media(max-width:640px){ .hero{height:520px; margin:-16px -16px 20px -16px;} }
+
+  .hero .widget-row{
+    position:absolute; left:24px; right:24px; bottom:20px;
+    display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:0; z-index:2;
+  }
+  @media(max-width:640px){ .hero .widget-row{grid-template-columns:1fr; bottom:16px; left:16px; right:16px;} }
 </style>
 </head>
 <body>
@@ -176,28 +185,28 @@
   <div class="hero">
     <div class="hero-overlay"></div>
     <div class="hero-caption">PQIA-T2 — Cảng Hàng Không Quốc Tế Phú Quốc</div>
-  </div>
-  <div class="widget-row">
-    <div class="widget-card wx-card">
-      <div class="widget-label">Thời tiết Phú Quốc</div>
-      <div class="wx-main">
-        <span id="wxIcon" class="wx-icon">🌤️</span>
-        <span id="wxTemp" class="wx-temp">--°C</span>
+    <div class="widget-row">
+      <div class="widget-card wx-card">
+        <div class="widget-label">Thời tiết Phú Quốc</div>
+        <div class="wx-main">
+          <span id="wxIcon" class="wx-icon">🌤️</span>
+          <span id="wxTemp" class="wx-temp">--°C</span>
+        </div>
+        <div id="wxDesc" class="wx-desc">Đang tải...</div>
+        <div class="wx-stats">
+          <div><span class="wx-k">Gió</span><span id="wxWind">--</span></div>
+          <div><span class="wx-k">Ẩm</span><span id="wxHum">--</span></div>
+          <div><span class="wx-k">Mưa</span><span id="wxRain">--</span></div>
+        </div>
       </div>
-      <div id="wxDesc" class="wx-desc">Đang tải...</div>
-      <div class="wx-stats">
-        <div><span class="wx-k">Gió</span><span id="wxWind">--</span></div>
-        <div><span class="wx-k">Ẩm</span><span id="wxHum">--</span></div>
-        <div><span class="wx-k">Mưa</span><span id="wxRain">--</span></div>
+      <div class="widget-card cal-card">
+        <div class="widget-label" id="calMonthLabel">Tháng -- năm ----</div>
+        <span id="calBadge" class="cal-badge">-- ngày có hồ sơ</span>
+        <div class="cal-weekdays">
+          <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
       </div>
-    </div>
-    <div class="widget-card cal-card">
-      <div class="widget-label" id="calMonthLabel">Tháng -- năm ----</div>
-      <span id="calBadge" class="cal-badge">-- ngày có hồ sơ</span>
-      <div class="cal-weekdays">
-        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
-      </div>
-      <div class="cal-grid" id="calGrid"></div>
     </div>
   </div>
   <header>
