@@ -74,6 +74,9 @@
 
   .tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
   .tab{padding:10px 20px; border-radius:10px; cursor:pointer; font-weight:600; font-size:14px; background:var(--glass); border:1px solid var(--glass-brd); color:var(--text-dim); transition:.15s;}
+  @media(max-width:640px){
+    .tab{ padding:8px 14px; font-size:12.5px; }
+  }
   .tab.active{background:linear-gradient(135deg,var(--accent),var(--accent-2)); border-color:var(--accent); color:#fff; box-shadow:0 4px 12px rgba(22,48,92,.25);}
   .tab .cnt{opacity:.7; font-weight:400; margin-left:6px;}
   .tab.active .cnt{color:#ffffffcc;}
@@ -95,6 +98,9 @@
   }
 
   .cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin-bottom:20px;}
+  @media(max-width:640px){
+    .cards{ grid-template-columns:repeat(2,1fr); }
+  }
   .card{background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:16px 18px 14px; box-shadow:0 1px 2px rgba(15,23,42,.04),0 10px 24px rgba(15,23,42,.08); position:relative; overflow:hidden; transition:.2s ease;}
   .card::after{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--card-c,var(--accent));}
   .card::before{content:''; position:absolute; top:-22px; right:-22px; width:70px; height:70px; border-radius:50%; background:var(--card-c,var(--accent)); opacity:.08;}
@@ -111,6 +117,7 @@
 
   .grid-main{display:grid; grid-template-columns:minmax(300px,380px) 1fr; gap:18px;}
   @media(max-width:860px){.grid-main{grid-template-columns:1fr;}}
+  .grid-main > .panel{ min-width:0; }
 
   .panel{
     background:var(--card-bg); border:1px solid var(--border); border-radius:16px;
@@ -162,7 +169,7 @@
     display:inline-block; padding:3px 9px; border-radius:14px; font-size:11px; font-weight:700;
     line-height:1.4;
   }
-  .tbl-wrap{max-height:640px; overflow:auto;}
+  .tbl-wrap{max-height:640px; overflow:auto; max-width:100%;}
   .scan-link{color:var(--blue); text-decoration:none; font-size:12px; white-space:nowrap;}
   .scan-link:hover{text-decoration:underline;}
   .note{color:var(--text-dim); font-size:12px;}
@@ -217,6 +224,13 @@
     display:flex; gap:14px; flex-wrap:wrap; z-index:2; margin-bottom:0;
   }
   @media(max-width:640px){ .hero .widget-row{left:16px; right:16px; bottom:16px;} }
+  @media(max-width:640px){
+    .wx-card, .cal-card{ width:100%; max-width:280px; }
+  }
+
+  .subtabs{ display:flex; gap:6px; margin-bottom:16px; }
+  .subtab{ padding:6px 12px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; color:var(--text-dim); background:var(--glass); border:1px solid var(--glass-brd); }
+  .subtab.active{ background:var(--accent); color:#fff; border-color:var(--accent); }
 </style>
 </head>
 <body>
@@ -277,16 +291,27 @@
 
   <div class="grid-main">
     <div class="panel">
-      <h3>Phân bố trạng thái</h3>
-      <canvas id="statusChart" height="230"></canvas>
-      <h3 style="margin-top:22px;">So sánh 3 hạng mục</h3>
-      <canvas id="compareChart" height="200"></canvas>
-      <h3 style="margin-top:22px;">Xu hướng hồ sơ theo tháng</h3>
-      <canvas id="trendChart" height="180"></canvas>
-      <h3 style="margin-top:22px;">Thời gian xử lý TB (ngày)</h3>
-      <canvas id="procTimeChart" height="170"></canvas>
-      <h3 style="margin-top:22px;">⚠ Hồ sơ tồn đọng</h3>
-      <div class="pending-list" id="pendingList"></div>
+      <div class="subtabs" id="chartSubtabs">
+        <span class="subtab active" data-view="overview">Tổng quan</span>
+        <span class="subtab" data-view="trend">Xu hướng</span>
+        <span class="subtab" data-view="alert">Cảnh báo</span>
+      </div>
+      <div class="subview" data-view="overview">
+        <h3>Phân bố trạng thái</h3>
+        <canvas id="statusChart" height="220"></canvas>
+        <h3 style="margin-top:20px;">So sánh 3 hạng mục</h3>
+        <canvas id="compareChart" height="190"></canvas>
+      </div>
+      <div class="subview" data-view="trend" style="display:none;">
+        <h3>Xu hướng hồ sơ theo tháng</h3>
+        <canvas id="trendChart" height="200"></canvas>
+        <h3 style="margin-top:20px;">Thời gian xử lý TB (ngày)</h3>
+        <canvas id="procTimeChart" height="190"></canvas>
+      </div>
+      <div class="subview" data-view="alert" style="display:none;">
+        <h3>⚠ Hồ sơ tồn đọng</h3>
+        <div class="pending-list" id="pendingList"></div>
+      </div>
     </div>
     <div class="panel">
       <h3 id="tableTitle">Danh mục hồ sơ</h3>
@@ -524,6 +549,17 @@ function renderTabs(){
 }
 
 function switchTab(key){ activeTab = key; render(); renderTabs(); }
+
+document.getElementById('chartSubtabs').addEventListener('click', (e)=>{
+  const el = e.target.closest('.subtab');
+  if(!el) return;
+  document.querySelectorAll('.subtab').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  const view = el.dataset.view;
+  document.querySelectorAll('.subview').forEach(v=>{
+    v.style.display = v.dataset.view===view ? '' : 'none';
+  });
+});
 
 const percentLabelPlugin = {
   id: 'percentLabel',
